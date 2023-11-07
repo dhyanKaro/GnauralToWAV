@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="GnauralToWAV:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/GnauralToWAV_jar</output-path>
+    <root id="archive" name="GnauralToWAV.jar">
+      <element id="module-output" name="GnauralToWAV" />
+    </root>
+  </artifact>
+</component>
