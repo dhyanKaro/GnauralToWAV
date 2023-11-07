@@ -2,7 +2,7 @@
 
 ## Introduction
 
-GnauralToWAV is a CLI Java application that converts [Gnaural](https://sourceforge.net/projects/gnaural/) schedule files to WAV audio files. It uses (almost) the same engine as Gnaural's to generate a binaural beat audio track based on the input schedule file. The output is a WAV audio file, and should be identical to the one you'd get if you were to do it manually using the actual Gnaural GUI.
+GnauralToWAV is a Java application that converts [Gnaural](https://sourceforge.net/projects/gnaural/) schedule files to WAV audio files. The application uses Gnaural's (almost) same engine to generate binaural beats based on the input schedule file. The output is a WAV audio file.
 
 ## Installation
 
@@ -41,4 +41,4 @@ The application will read the input file and generate a WAV audio file with the 
 
 ## Contributing
 
-Hey, feel free to pour through this decompiled java byte-code. Most of it's the same as Gnaural, except I added some cool ADSR envelope stuff and a new voice-type too! Make a PR. Good luck.
+Hey, feel free to pour through this decompiled java byte-code. Most of it's the same as Gnaural, except I added some cool ADSR envelope stuff and a new voice-type too! Good luck.
