@@ -4,6 +4,8 @@
 
 GnauralToWAV is a Java application that converts [Gnaural](https://sourceforge.net/projects/gnaural/) schedule files to WAV audio files. It uses Gnaural's engine to generate binaural or isochronic beats based on the input schedule file. The output is a WAV audio file.
 
+Also, a new voice-type was created, "Isochronic Alternating", and the previously existing voice-type of that same name was renamed to "Isochronic Staggered" and now it all makes more sense. Trust me, if you saw a photo of the waveforms you'd agree.
+
 ## Installation
 
 To install and run this project, you have two options:
@@ -44,3 +46,12 @@ The app will read the input file and generate a WAV audio file with the same nam
 ## Contributing
 
 Hey, feel free to pour through this decompiled java byte-code. Most of it's the same as Gnaural, except I added some cool ADSR envelope stuff and a new voice-type too! Good luck.
+
+### FAQ
+
+- Why did you have to base this off of decompiled code?
+  - Because Gnaural is somehow closed-source yet GPL licensed.
+- How frequently-asked are these FAQs?
+  - Very infrequently.
+- Will you add more questions to this FAQ?
+  - No, it's midnight and I need to sleep now.

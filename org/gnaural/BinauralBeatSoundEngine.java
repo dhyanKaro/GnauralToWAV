@@ -75,7 +75,7 @@ class BinauralBeatSoundEngine {
     this.BB_Reset();
   }
   
-  int BB_InitVoices(int NumberOfVoices) {
+  int BB_InitVoices(int numberOfVoices) {
     int i = 0;
     if (null != this.BB_Voice) {
       while (this.BB_InCriticalLoopFlag) {
@@ -89,11 +89,11 @@ class BinauralBeatSoundEngine {
       this.BB_CleanupVoices();
     }
     this.BB_VoiceCount = 0;
-    this.BB_Voice = new BB_VoiceData[NumberOfVoices];
+    this.BB_Voice = new BB_VoiceData[numberOfVoices];
     if (null == this.BB_Voice) {
       return 0;
     }
-    for (i = 0; i < NumberOfVoices; ++i) {
+    for (i = 0; i < numberOfVoices; ++i) {
       this.BB_Voice[i] = new BB_VoiceData();
       this.BB_Voice[i].Entry = null;
       this.BB_Voice[i].Drop = null;
@@ -116,12 +116,12 @@ class BinauralBeatSoundEngine {
       this.BB_Voice[i].noiseL = 1;
       this.BB_Voice[i].noiseR = 1;
     }
-    this.BB_VoiceCount = NumberOfVoices;
+    this.BB_VoiceCount = numberOfVoices;
     return this.BB_VoiceCount;
   }
   
-  void BB_SetupVoice(int i, int VoiceType, int mute, int mono, int hide, String description, byte[] PCM_samples, int NumberOfEvents) {
-    this.BB_Voice[i].type = VoiceType;
+  void BB_SetupVoice(int i, int voiceType, int mute, int mono, int hide, String description, byte[] PCM_samples, int numberOfEvents) {
+    this.BB_Voice[i].type = voiceType;
     this.BB_Voice[i].mute = mute;
     this.BB_Voice[i].mono = mono;
     this.BB_Voice[i].mute = mute;
@@ -129,14 +129,14 @@ class BinauralBeatSoundEngine {
     this.BB_Voice[i].PCM_samples = PCM_samples;
     this.BB_Voice[i].EntryCount = 0;
     this.BB_Voice[i].CurEntry = 0;
-    if (null == this.BB_Voice[i].Entry || this.BB_Voice[i].Entry.length != NumberOfEvents) {
-      this.BB_Voice[i].Entry = new BB_EventData[NumberOfEvents];
-      for (int j = 0; j < NumberOfEvents; ++j) {
+    if (null == this.BB_Voice[i].Entry || this.BB_Voice[i].Entry.length != numberOfEvents) {
+      this.BB_Voice[i].Entry = new BB_EventData[numberOfEvents];
+      for (int j = 0; j < numberOfEvents; ++j) {
         this.BB_Voice[i].Entry[j] = new BB_EventData();
       }
     }
     this.BB_Voice[i].TotalDuration = 0.0;
-    this.BB_Voice[i].EntryCount = NumberOfEvents;
+    this.BB_Voice[i].EntryCount = numberOfEvents;
   }
   
   void BB_CalibrateVoices() {
@@ -386,9 +386,7 @@ class BinauralBeatSoundEngine {
               sampleR = (short) (BB_Voice[voice].PCM_samples[bytecount + 2] & 0xFF | BB_Voice[voice].PCM_samples[bytecount + 3] << 8);
               ++BB_Voice[voice].PCM_samples_currentcount;
             }
-            case BB_VOICETYPE_ISOPULSE, BB_VOICETYPE_ISOPULSE_STAGGERED -> {
-              boolean iso_stag = BB_Voice[voice].type == BB_VOICETYPE_ISOPULSE_STAGGERED;
-  
+            case BB_VOICETYPE_ISOPULSE -> {
               // advance to the next sample for each channel
               BB_Voice[voice].sinPosL += BB_Voice[voice].cur_beatfreqL_factor;
               if (BB_Voice[voice].sinPosL >= BB_TWO_PI) {
@@ -399,32 +397,63 @@ class BinauralBeatSoundEngine {
               if (--BB_Voice[voice].cur_beatfreq_phasesamplecount < 1) {
                 BB_Voice[voice].cur_beatfreq_phasesamplecount = BB_Voice[voice].cur_beatfreq_phasesamplecount_start;
                 BB_Voice[voice].cur_beatfreq_phaseflag = !BB_Voice[voice].cur_beatfreq_phaseflag;
-                leftRightChannelSwitch = leftRightChannelSwitch ^ BB_Voice[voice].cur_beatfreq_phaseflag;
+              }
+              // normal iso and iso-staggered
+              // phaseflag is false = tone on -- only then do these calculations, otherwise it should be 0 from above
+              if (!BB_Voice[voice].cur_beatfreq_phaseflag) {
+                // calc sine for this sample
+                BB_Voice[voice].sinR = BB_Voice[voice].sinL = Math.sin(BB_Voice[voice].sinPosL);
+                sampleR = sampleL = BB_Voice[voice].sinL * BB_SIN_SCALER;
+  
+                int totalSamples = BB_Voice[voice].cur_beatfreq_phasesamplecount_start / 2;
+                int currentSample = BB_Voice[voice].cur_beatfreq_phasesamplecount / 2;
+  
+                double envelope = adsrVolume(
+                        currentSample,
+                        totalSamples,
+                        1 - phe,
+                        0,
+                        1,
+                        1 - phe);
+  
+                sampleL *= envelope;
+                sampleR *= envelope;
+              }
+            }
+            case BB_VOICETYPE_ISOPULSE_STAGGERED -> {
+              // advance to the next sample for each channel
+              BB_Voice[voice].sinPosL += BB_Voice[voice].cur_beatfreqL_factor;
+              // wrap sinPosL within [0, 2π)
+              if (BB_Voice[voice].sinPosL >= BB_TWO_PI) {
+                BB_Voice[voice].sinPosL -= BB_TWO_PI;
+              }
+              BB_Voice[voice].sinPosR = BB_Voice[voice].sinPosL;
+              // this cycle complete, now determine whether tone or silence and flip the phase flag
+              if (--BB_Voice[voice].cur_beatfreq_phasesamplecount < 1) {
+                BB_Voice[voice].cur_beatfreq_phasesamplecount = BB_Voice[voice].cur_beatfreq_phasesamplecount_start;
+                BB_Voice[voice].cur_beatfreq_phaseflag = !BB_Voice[voice].cur_beatfreq_phaseflag;
               }
               // calc sine for this sample
               BB_Voice[voice].sinR = BB_Voice[voice].sinL = Math.sin(BB_Voice[voice].sinPosL);
               // normal iso and iso-staggered
               if (BB_Voice[voice].cur_beatfreq_phaseflag) { // phaseflag is true = tone off
                 sampleL = 0;
-                sampleR = iso_stag ? BB_Voice[voice].sinL * BB_SIN_SCALER : sampleL;
+                sampleR = BB_Voice[voice].sinL * BB_SIN_SCALER;
               } else { // phaseflag is false = tone on
                 sampleL = BB_Voice[voice].sinL * BB_SIN_SCALER;
-                sampleR = iso_stag ? 0 : sampleL;
+                sampleR = 0;
               }
               int totalSamples = BB_Voice[voice].cur_beatfreq_phasesamplecount_start / 2;
               int currentSample = BB_Voice[voice].cur_beatfreq_phasesamplecount / 2;
-  
-              double attack_release = 1-phe;
-              double decay = 0;
-              double sustain = 1;
+    
               double envelope = adsrVolume(
                       currentSample,
                       totalSamples,
-                      attack_release,
-                      decay,
-                      sustain,
-                      attack_release);
-  
+                      1-phe,
+                      0,
+                      1,
+                      1-phe);
+    
               sampleL *= envelope;
               sampleR *= envelope;
             }
@@ -451,17 +480,13 @@ class BinauralBeatSoundEngine {
               else
                 currentSample =   BB_Voice[voice].cur_beatfreq_phasesamplecount_start-BB_Voice[voice].cur_beatfreq_phasesamplecount;
               
-              double attack = 1-phe;
-              double decay = phe;
-              double sustain = 0;
-              double release = 0;
               double envelope = adsrVolume(
                       currentSample,
                       totalSamples,
-                      attack,
-                      decay,
-                      sustain,
-                      release);
+                      1-phe,
+                      phe,
+                      0,
+                      0);
   
               if (BB_Voice[voice].cur_beatfreq_phaseflag == leftRightChannelSwitch)
                 sampleR = envelope * Math.sin(BB_Voice[voice].sinPosR) * BB_SIN_SCALER;
@@ -520,7 +545,6 @@ class BinauralBeatSoundEngine {
       ++k;
     }
   }
-  
   
   void SeedRand(int i1, int i2) {
     if (i2 == -1) {
