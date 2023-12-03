@@ -23,8 +23,7 @@ class BinauralBeatSoundEngine {
   static final double BB_TWO_PI = Math.PI * 2;
   static final int BB_DROPLEN = 8192;
   static final int BB_RAINLEN = 44;
-  static final int ML_MULT = 69069;
-  static final float[] BB_DefaultBBSched = new float[]{9.0f, 0.72f, 0.72f, 0.0f, 262.35f, 45.0f, 0.73f, 0.73f, 12.0f, 262.1f, 60.0f, 0.73f, 0.73f, 8.0f, 260.83f, 60.0f, 0.73f, 0.73f, 6.0f, 259.14f, 120.0f, 0.73f, 0.73f, 5.0f, 257.45f, 180.0f, 0.73f, 0.73f, 4.3f, 254.07f, 180.0f, 0.74f, 0.74f, 4.0f, 249.0f, 6.0f, 0.74f, 0.74f, 3.9f, 243.94f, 6.0f, 0.74f, 0.74f, 7.0f, 243.77f, 360.0f, 0.74f, 0.74f, 3.9f, 243.6f, 6.0f, 0.75f, 0.75f, 4.2f, 233.47f, 6.0f, 0.75f, 0.75f, 7.0f, 233.3f, 180.0f, 0.75f, 0.75f, 3.9f, 233.13f, 180.0f, 0.76f, 0.76f, 4.0f, 228.06f, 6.0f, 0.77f, 0.77f, 3.9f, 222.99f, 6.0f, 0.77f, 0.77f, 7.0f, 222.82f, 340.0f, 0.77f, 0.77f, 3.9f, 222.66f, 6.0f, 0.78f, 0.78f, 4.2f, 213.08f, 6.0f, 0.78f, 0.78f, 7.0f, 212.91f, 180.0f, 0.78f, 0.78f, 4.0f, 212.75f, 180.0f, 0.78f, 0.78f, 4.2f, 207.68f, 6.0f, 0.79f, 0.79f, 3.8f, 202.61f, 6.0f, 0.79f, 0.79f, 7.0f, 202.44f, 400.0f, 0.79f, 0.79f, 3.9f, 202.27f, 6.0f, 0.8f, 0.8f, 4.2f, 191.01f, 6.0f, 0.8f, 0.8f, 7.0f, 190.84f, 180.0f, 0.8f, 0.8f, 4.2f, 190.67f, 180.0f, 0.8f, 0.8f, 3.9f, 185.61f, 6.0f, 0.81f, 0.81f, 4.0f, 180.54f, 6.0f, 0.81f, 0.81f, 7.0f, 180.37f, 300.0f, 0.81f, 0.81f, 4.0f, 180.2f, 6.0f, 0.82f, 0.82f, 3.8f, 171.76f, 6.0f, 0.82f, 0.82f, 7.0f, 171.59f, 180.0f, 0.82f, 0.82f, 3.9f, 171.42f, 180.0f, 0.82f, 0.82f, 4.1f, 166.35f, 6.0f, 0.83f, 0.83f, 3.9f, 161.28f, 6.0f, 0.83f, 0.83f, 7.0f, 161.11f, 360.0f, 0.83f, 0.83f, 3.9f, 160.94f, 6.0f, 0.84f, 0.84f, 4.1f, 150.81f, 6.0f, 0.84f, 0.84f, 7.0f, 150.64f, 180.0f, 0.84f, 0.84f, 3.9f, 150.47f, 180.0f, 0.84f, 0.84f, 3.6f, 145.41f, 6.0f, 0.85f, 0.85f, 4.0f, 140.34f, 6.0f, 0.85f, 0.85f, 7.0f, 140.17f, 64.0f, 0.85f, 0.85f, 4.3f, 140.0f};
+  static final long ML_MULT = 69069;
   static int updateperiod = 1;
   BB_VoiceData[] BB_Voice;
   double BB_TotalDuration = 0.0;
@@ -52,8 +51,8 @@ class BinauralBeatSoundEngine {
   float BB_WaterWindow = 126.0f;
   float BB_DropLowcut = 8.0f;
   float BB_RainLowcut = 0.15f;
-  String mTitle = "Basic meditation session";
-  String mDescription = "Default built-in schedule with descending base frequency, compensating volume, and intermittent wake-up spikes";
+  String mTitle = "Default title";
+  String mDescription = "Default description";
   String mAuthor = "Gnaural";
   int BB_OutputL = 0;
   int BB_OutputR = 0;
@@ -199,19 +198,22 @@ class BinauralBeatSoundEngine {
     }
   }
   
-  double volumeFactor(int currentSample, int fadeSampleCount, int totalSampleCount) {
-    if (currentSample < fadeSampleCount) {
-      // We are in the fade-in phase
-      return (double)currentSample / fadeSampleCount;
-    } else if (currentSample > totalSampleCount - fadeSampleCount) {
-      // We are in the fade-out phase
-      return (double)(totalSampleCount - currentSample) / fadeSampleCount;
-    } else {
-      // We are in the full volume phase
-      return 1.0;
-    }
-  }
-  
+  /**
+   * This function calculates the volume of a sound sample based on the ADSR envelope.
+   *
+   * @param currentSample The current sample number.
+   * @param totalSamples The total number of samples.
+   * @param attack The proportion of the total time that the attack phase should take.
+   * @param decay The proportion of the total time that the decay phase should take.
+   * @param sustain The level at which the sound should sustain after the decay phase.
+   * @param release The proportion of the total time that the release phase should take.
+   * @return The volume of the sound sample.
+   * <p>
+   * Limitations:
+   * 1. The parameters attack, decay, sustain, and release should be values between 0 and 1.
+   * 2. The sum of attack, decay, and release should not exceed 1 to leave room for the sustain phase.
+   * 3. The function does not handle cases where currentSample is greater than totalSamples.
+   */
   double adsrVolume(int currentSample, int totalSamples, double attack, double decay, double sustain, double release) {
     double attackSamples = totalSamples * attack;
     double decaySamples = totalSamples * decay;
@@ -238,10 +240,9 @@ class BinauralBeatSoundEngine {
   void BB_MainLoop(byte[] pSoundBuffer, int bufferLen) {
     int pSoundBufferIndex = 0;
     long nbSample = bufferLen >> 2;
-    int k = 0;
-    int fadeSampleCount = 0;
+    long k = 0;
     // Fill sound buffer; do everything in this loop for every sample in pSoundBuffer to be filled
-    while ((long) k < nbSample) {
+    while (k < nbSample) {
       --updateperiod;
       double sumR = 0.0;
       double sumL = 0.0;
@@ -335,8 +336,6 @@ class BinauralBeatSoundEngine {
                   double phasefactor = (double) BB_Voice[voice].cur_beatfreq_phasesamplecount / (double) BB_Voice[voice].cur_beatfreq_phasesamplecount_start;
                   BB_Voice[voice].cur_beatfreq_phasesamplecount_start = (int) (BB_AUDIOSAMPLERATE_HALF / BB_Voice[voice].cur_beatfreq);
                   BB_Voice[voice].cur_beatfreq_phasesamplecount = (int) ((double) BB_Voice[voice].cur_beatfreq_phasesamplecount_start * phasefactor);
-                  // fade in and fade out duration in samples, based on percentage of samples in tone (don't set to more than 0.5)
-                  fadeSampleCount = (int)(0.3819660113 * BB_Voice[voice].cur_beatfreq_phasesamplecount_start);
                 }
                 case BB_VOICETYPE_WATERDROPS, BB_VOICETYPE_RAIN -> {
                   if (null == BB_Voice[voice].Drop) {
@@ -412,10 +411,24 @@ class BinauralBeatSoundEngine {
                 sampleL = BB_Voice[voice].sinL * BB_SIN_SCALER;
                 sampleR = iso_stag ? 0 : sampleL;
               }
-              double factor = volumeFactor(BB_Voice[voice].cur_beatfreq_phasesamplecount, fadeSampleCount, BB_Voice[voice].cur_beatfreq_phasesamplecount_start);
-              sampleL *= factor;
-              sampleR *= factor;
+              int totalSamples = BB_Voice[voice].cur_beatfreq_phasesamplecount_start / 2;
+              int currentSample = BB_Voice[voice].cur_beatfreq_phasesamplecount / 2;
+  
+              double attack_release = 1-phe;
+              double decay = 0;
+              double sustain = 1;
+              double envelope = adsrVolume(
+                      currentSample,
+                      totalSamples,
+                      attack_release,
+                      decay,
+                      sustain,
+                      attack_release);
+  
+              sampleL *= envelope;
+              sampleR *= envelope;
             }
+            
             case BB_VOICETYPE_ISOPULSE_ALTERNATING -> {
               // advance to the next sample for each channel
               BB_Voice[voice].sinPosL += BB_Voice[voice].cur_beatfreqL_factor;
@@ -436,7 +449,7 @@ class BinauralBeatSoundEngine {
               if (BB_Voice[voice].cur_beatfreq_phaseflag)
                 currentSample = 2*BB_Voice[voice].cur_beatfreq_phasesamplecount_start-BB_Voice[voice].cur_beatfreq_phasesamplecount;
               else
-                currentSample = BB_Voice[voice].cur_beatfreq_phasesamplecount_start-BB_Voice[voice].cur_beatfreq_phasesamplecount;
+                currentSample =   BB_Voice[voice].cur_beatfreq_phasesamplecount_start-BB_Voice[voice].cur_beatfreq_phasesamplecount;
               
               double attack = 1-phe;
               double decay = phe;
@@ -495,8 +508,8 @@ class BinauralBeatSoundEngine {
         pSoundBuffer[pSoundBufferIndex++] = (byte) ((short) sumL >> 8);
       }
       if (updateperiod == 0) {
-        updateperiod = 16;
-        BB_CurrentSampleCount += 16L;
+        updateperiod = BB_UPDATEPERIOD_SAMPLES;
+        BB_CurrentSampleCount += updateperiod;
         if ((double) BB_OutputL < sumL) {
           BB_OutputL = (int) sumL;
         }
@@ -522,7 +535,7 @@ class BinauralBeatSoundEngine {
     long r1 = srgn ^ r0;
     r0 = r1 << 17;
     srgn = r0 ^ r1;
-    mcgn = 69069L * mcgn;
+    mcgn = ML_MULT * mcgn;
     r1 = mcgn ^ srgn;
     return (int) r1;
   }
@@ -553,14 +566,15 @@ class BinauralBeatSoundEngine {
     this.BB_LoopCount = this.BB_Loops;
   }
   
-  double BB_GetTopBeatfreq(int voice) {
-    double top_beatfreq = 0.0;
-    for (int e = 0; e < this.BB_Voice[voice].EntryCount; ++e) {
-      if (!(top_beatfreq < Math.abs(this.BB_Voice[voice].Entry[e].beatfreq_start_HALF))) continue;
-      top_beatfreq = Math.abs(this.BB_Voice[voice].Entry[e].beatfreq_start_HALF);
-    }
-    return top_beatfreq;
-  }
+  // This was probably used in the GUI for a y-axis limit
+//  double BB_GetTopBeatfreq(int voice) {
+//    double top_beatfreq = 0.0;
+//    for (int e = 0; e < this.BB_Voice[voice].EntryCount; ++e) {
+//      if (!(top_beatfreq < Math.abs(this.BB_Voice[voice].Entry[e].beatfreq_start_HALF))) continue;
+//      top_beatfreq = Math.abs(this.BB_Voice[voice].Entry[e].beatfreq_start_HALF);
+//    }
+//    return top_beatfreq;
+//  }
   
   void BB_NullAllPCMData() {
     for (int i = 0; i < this.BB_VoiceCount; ++i) {
@@ -659,7 +673,7 @@ class BinauralBeatSoundEngine {
       this.BB_DropMother = this.BB_WaterInit(BB_DROPLEN, 600.0f);
     }
     if (null == this.BB_RainMother) {
-      this.BB_RainMother = this.BB_WaterInit(44, 3.4f);
+      this.BB_RainMother = this.BB_WaterInit(BB_RAINLEN, 3.4f);
     }
   }
 }
