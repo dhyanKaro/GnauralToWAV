@@ -30,8 +30,4 @@ class BB_EventData {
   double beatfreq_end_HALF;
   
   double beatfreq_spread_HALF;
-  
-  double LastPositionL;
-  
-  double LastPositionR;
 }

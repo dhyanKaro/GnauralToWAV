@@ -82,6 +82,12 @@ public class GnauralToWAV {
       System.exit(2);
     }
     stopBB();
-    new GnauralReadXMLFile(file.getAbsolutePath(), this.BB);
+    try {
+      new GnauralReadXMLFile(file.getAbsolutePath(), this.BB);
+    } catch (Exception e) {
+      System.err.println("Error reading input schedule file. Make sure it's formatted correctly.");
+      System.err.println(e);
+      System.exit(8);
+    }
   }
 }
