@@ -106,42 +106,42 @@ public class GnauralReadXMLFile extends DefaultHandler {
   
   public void GnauralTextSorter(String name, String value) {
     if (null == this.BB || !this.FINAL_PASS) return;
-    if (name.equals("duration")) {
+    if ("duration".equals(name)) {
       ((this.BB.BB_Voice[this.CurVox]).Entry[this.CurEntry]).duration = Float.parseFloat(value);
       return;
     }
-    if (name.equals("volume_left")) {
+    if ("volume_left".equals(name)) {
       ((this.BB.BB_Voice[this.CurVox]).Entry[this.CurEntry]).volL_start = Float.parseFloat(value);
       return;
     }
-    if (name.equals("volume_right")) {
+    if ("volume_right".equals(name)) {
       ((this.BB.BB_Voice[this.CurVox]).Entry[this.CurEntry]).volR_start = Float.parseFloat(value);
       return;
     }
-    if (name.equals("beatfreq")) {
+    if ("beatfreq".equals(name)) {
       ((this.BB.BB_Voice[this.CurVox]).Entry[this.CurEntry]).beatfreq_start_HALF = 0.5D * Float.parseFloat(value);
       return;
     }
-    if (name.equals("basefreq")) {
+    if ("basefreq".equals(name)) {
       ((this.BB.BB_Voice[this.CurVox]).Entry[this.CurEntry]).basefreq_start = Float.parseFloat(value);
       return;
     }
-    if (name.equals("id")) {
+    if ("id".equals(name)) {
       (this.BB.BB_Voice[this.CurVox]).id = this.CurVox;
       return;
     }
-    if (name.equals("type")) {
+    if ("type".equals(name)) {
       (this.BB.BB_Voice[this.CurVox]).type = Integer.parseInt(value);
       return;
     }
-    if (name.equals("entrycount")) return;
-    if (name.equals("voicecount")) return;
-    if (name.equals("totalentrycount")) return;
-    if (name.equals("loops")) {
+    if ("entrycount".equals(name)) return;
+    if ("voicecount".equals(name)) return;
+    if ("totalentrycount".equals(name)) return;
+    if ("loops".equals(name)) {
       this.BB.BB_Loops = this.BB.BB_LoopCount = Integer.parseInt(value);
       return;
     }
-    if (name.equals("overallvolume_left")) {
+    if ("overallvolume_left".equals(name)) {
       this.BB.BB_VolumeOverall_left = Float.parseFloat(value);
       if (this.BB.BB_VolumeOverall_right <= this.BB.BB_VolumeOverall_left) {
         this.BB.BB_OverallVolume = this.BB.BB_VolumeOverall_left;
@@ -151,7 +151,7 @@ public class GnauralReadXMLFile extends DefaultHandler {
       }
       return;
     }
-    if (name.equals("overallvolume_right")) {
+    if ("overallvolume_right".equals(name)) {
       this.BB.BB_VolumeOverall_right = Float.parseFloat(value);
       if (this.BB.BB_VolumeOverall_right >= this.BB.BB_VolumeOverall_left) {
         this.BB.BB_OverallVolume = this.BB.BB_VolumeOverall_right;
@@ -161,44 +161,44 @@ public class GnauralReadXMLFile extends DefaultHandler {
       }
       return;
     }
-    if (name.equals("stereoswap")) {
+    if ("stereoswap".equals(name)) {
       this.BB.BB_StereoSwap = Integer.parseInt(value);
       return;
     }
-    if (name.equals("voice_mute")) {
+    if ("voice_mute".equals(name)) {
       (this.BB.BB_Voice[this.CurVox]).mute = Integer.parseInt(value);
       return;
     }
-    if (name.equals("voice_mono")) {
+    if ("voice_mono".equals(name)) {
       (this.BB.BB_Voice[this.CurVox]).mono = Integer.parseInt(value);
       return;
     }
-    if (name.equals("voice_state")) return;
-    if (name.equals("voice_hide")) {
+    if ("voice_state".equals(name)) return;
+    if ("voice_hide".equals(name)) {
       (this.BB.BB_Voice[this.CurVox]).hide = Integer.parseInt(value);
       return;
     }
-    if (name.equals("gnauralfile_version")) {
-      if (value.equals(GNAURAL_XML_VERSION)) {
+    if ("gnauralfile_version".equals(name)) {
+      if (GNAURAL_XML_VERSION.equals(value)) {
         System.out.println("Usable file version, " + value);
       } else {
         System.out.println("Unknown File Version, expected " + GNAURAL_XML_VERSION + ", got " + value);
       }
       return;
     }
-    if (name.equals("title")) {
+    if ("title".equals(name)) {
       this.BB.mTitle = value;
       return;
     }
-    if (name.equals("schedule_description")) {
+    if ("schedule_description".equals(name)) {
       this.BB.mDescription = value;
       return;
     }
-    if (name.equals("author")) {
+    if ("author".equals(name)) {
       this.BB.mAuthor = value;
       return;
     }
-    if (name.equals("description")) {
+    if ("description".equals(name)) {
       this.voice_desc = value;
       (this.BB.BB_Voice[this.CurVox]).Description = value;
     }
@@ -206,26 +206,26 @@ public class GnauralReadXMLFile extends DefaultHandler {
   
   public void startElement(String namespaceURI, String localName, String qName, Attributes attrs) {
     this.CurElement = qName;
-    if (qName.equalsIgnoreCase("entry")) {
+    if ("entry".equalsIgnoreCase(qName)) {
       this.TotalEntryCount++;
       int count = attrs.getLength();
       if (null != this.BB) for (int i = 0; i < count; i++)
         GnauralTextSorter(attrs.getQName(i), attrs.getValue(i));
       return;
     }
-    if (qName.equalsIgnoreCase("voice")) {
+    if ("voice".equalsIgnoreCase(qName)) {
       this.TotalVoiceCount++;
       this.CurEntry = 0;
     }
   }
   
   public void endElement(String namespaceURI, String localName, String qName) {
-    if (qName.equalsIgnoreCase("entry")) {
+    if ("entry".equalsIgnoreCase(qName)) {
       this.CurEntry++;
       this.CurElement = "";
       return;
     }
-    if (qName.equalsIgnoreCase("voice")) {
+    if ("voice".equalsIgnoreCase(qName)) {
       if (null != this.BB && !this.FINAL_PASS)
         this.BB.BB_SetupVoice(this.CurVox, 0, (this.BB.BB_Voice[this.CurVox]).mute, (this.BB.BB_Voice[this.CurVox]).mono, (this.BB.BB_Voice[this.CurVox]).hide, (this.BB.BB_Voice[this.CurVox]).Description, (this.BB.BB_Voice[this.CurVox]).PCM_samples, this.CurEntry);
       this.CurVox++;
@@ -237,7 +237,7 @@ public class GnauralReadXMLFile extends DefaultHandler {
   }
   
   public void characters(char[] ch, int start, int length) {
-    if (this.CurElement.equalsIgnoreCase("")) return;
+    if ("".equalsIgnoreCase(this.CurElement)) return;
     GnauralTextSorter(this.CurElement, new String(ch, start, length));
   }
   
